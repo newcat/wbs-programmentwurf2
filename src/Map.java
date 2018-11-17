@@ -1,5 +1,6 @@
 import processing.core.PVector;
-
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.HashMap;
 import java.util.List;
 
@@ -15,6 +16,24 @@ public class Map {
         this.dimY = dimY;
         this.fields = new int[dimX * dimY];
         // TODO: Load fields and weights map from file
+        BufferedReader stream;
+        try {
+            String line;
+            stream = new BufferedReader(new FileReader(filePath));
+            int counter = 0;
+            while ((line = stream.readLine()) != null && counter < dimX * dimY) {
+                String[] test = line.split(";");
+                for (int i = 0; i < dimX; i++) {
+                    fields[counter] = Integer.parseInt(test[i]);
+                    counter++;
+                }
+            }
+            stream.close();
+            System.out.println(fields[counter]);
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
     }
 
     public List<Edge> getConnectionsFrom(int linearCoord) {
