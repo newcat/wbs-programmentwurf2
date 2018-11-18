@@ -1,4 +1,5 @@
 import processing.core.PVector;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.HashMap;
@@ -9,27 +10,33 @@ public class Map {
     private int dimX;
     private int dimY;
     private int[] fields;
-    private HashMap<Integer, Integer> weights;
+    private HashMap<Integer, Integer> weights = new HashMap<>();
 
     public Map(int dimX, int dimY, String filePath) {
         this.dimX = dimX;
         this.dimY = dimY;
         this.fields = new int[dimX * dimY];
-        // TODO: Load fields and weights map from file
         BufferedReader stream;
         try {
             String line;
             stream = new BufferedReader(new FileReader(filePath));
             int counter = 0;
             while ((line = stream.readLine()) != null && counter < dimX * dimY) {
-                String[] test = line.split(";");
+                String[] splittedLine = line.split(";");
                 for (int i = 0; i < dimX; i++) {
-                    fields[counter] = Integer.parseInt(test[i]);
+                    fields[counter] = Integer.parseInt(splittedLine[i]);
                     counter++;
                 }
             }
+            while ((line = stream.readLine()) != null) {
+                String[] splittedLine = line.split(";");
+                if (splittedLine[1].contains("Ebene") || splittedLine[1].contains("Fluss")
+                        || splittedLine[1].contains("Weg") || splittedLine[1].contains("Wald")
+                        || splittedLine[1].contains("Br") || splittedLine[1].contains("Felswand")) {
+                    weights.put(Integer.parseInt(splittedLine[0]), Integer.parseInt(splittedLine[2]));
+                }
+            }
             stream.close();
-            System.out.println(fields[counter]);
         } catch (Exception e) {
             System.out.println(e);
         }
