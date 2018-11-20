@@ -52,7 +52,7 @@ public class AStar {
         List<Edge> edges = map.getConnectionsFrom(el.node);
         for (Edge e : edges) {
             if (!containsField(openList, e.end) && containsField(closedList, e.end)) {
-                openList.add(new )
+
             }
         }
 

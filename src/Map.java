@@ -1,3 +1,4 @@
+import processing.core.PApplet;
 import processing.core.PVector;
 
 import java.io.BufferedReader;
@@ -5,14 +6,23 @@ import java.io.FileReader;
 import java.util.HashMap;
 import java.util.List;
 
-public class Map {
+class Map {
 
     private int dimX;
     private int dimY;
     private int[] fields;
     private HashMap<Integer, Integer> weights = new HashMap<>();
 
-    public Map(int dimX, int dimY, String filePath) {
+    private Color[] colors = new Color[]{
+            new Color(150, 255, 150),
+            new Color(0, 120, 255),
+            new Color(200, 200, 200),
+            new Color(0, 255, 0),
+            new Color(255, 255, 255),
+            new Color(60, 60, 60)
+    };
+
+    Map(int dimX, int dimY, String filePath) {
         this.dimX = dimX;
         this.dimY = dimY;
         this.fields = new int[dimX * dimY];
@@ -20,22 +30,29 @@ public class Map {
         try {
             String line;
             stream = new BufferedReader(new FileReader(filePath));
-            int counter = 0;
-            while ((line = stream.readLine()) != null && counter < dimX * dimY) {
+
+            // input fields
+            for (int y = 0; y < dimY; y++) {
+                line = stream.readLine();
                 String[] splittedLine = line.split(";");
-                for (int i = 0; i < dimX; i++) {
-                    fields[counter] = Integer.parseInt(splittedLine[i]);
-                    counter++;
+                if (splittedLine.length != dimX) {
+                    throw new Exception("Input error: Incorrect X dimensions");
+                }
+                for (int x = 0; x < dimX; x++) {
+                    fields[coordinatesToLinear(x, y)] = Integer.parseInt(splittedLine[x]);
                 }
             }
+
+            // ignore headers
+            stream.readLine();
+            stream.readLine();
+
+            // input field weights
             while ((line = stream.readLine()) != null) {
                 String[] splittedLine = line.split(";");
-                if (splittedLine[1].contains("Ebene") || splittedLine[1].contains("Fluss")
-                        || splittedLine[1].contains("Weg") || splittedLine[1].contains("Wald")
-                        || splittedLine[1].contains("Br") || splittedLine[1].contains("Felswand")) {
-                    weights.put(Integer.parseInt(splittedLine[0]), Integer.parseInt(splittedLine[2]));
-                }
+                weights.put(Integer.parseInt(splittedLine[0]), Integer.parseInt(splittedLine[2]));
             }
+
             stream.close();
         } catch (Exception e) {
             System.out.println(e);
@@ -43,7 +60,16 @@ public class Map {
 
     }
 
-    public List<Edge> getConnectionsFrom(int linearCoord) {
+    void draw(PApplet sketch, TileDrawer drawer) {
+        for (int y = 0; y < dimY; y++) {
+            for (int x = 0; x < dimX; x++) {
+                Color c = colors[fields[coordinatesToLinear(x, y)]];
+                drawer.drawTile(x, y, c.r, c.g, c.b, 255);
+            }
+        }
+    }
+
+    List<Edge> getConnectionsFrom(int linearCoord) {
         // TODO
         return null;
     }
