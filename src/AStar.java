@@ -19,6 +19,7 @@ public class AStar {
 
     private ArrayDeque<ListElement> closedList = new ArrayDeque<>();
     private ArrayList<ListElement> openList = new ArrayList<>();
+    private ArrayList<ListElement> path = new ArrayList<>();
     private boolean finished = false;
 
     private int start;
@@ -48,11 +49,24 @@ public class AStar {
             return;
         }
 
+        int costCheapestPath = 0;
+        for(ListElement l : path){
+            costCheapestPath += l.value;
+        }
+
         closedList.push(el);
         List<Edge> edges = map.getConnectionsFrom(el.node);
         for (Edge e : edges) {
-            if (!containsField(openList, e.end) && containsField(closedList, e.end)) {
-
+            if (!containsField(openList, e.end) && !containsField(closedList, e.end)) {
+                openList.add(new ListElement(e.end,el.node,e.value));
+                path.add(new ListElement(e.end, el.node,e.value));
+            }
+            if(containsField(openList,e.end) | containsField(closedList,e.end)){ // && (costCheapestPath + e.value < )
+                path.add(new ListElement(e.end, el.node,e.value));
+                if(containsField(closedList,e.end)){
+                    openList.add(new ListElement(e.end,el.node,e.value));
+                    closedList.remove(e.end);
+                }
             }
         }
 
