@@ -10,6 +10,7 @@ public class AStar {
         int node;
         int parentNode;
         int value;
+
         ListElement(int node, int parentNode, int value) {
             this.node = node;
             this.parentNode = parentNode;
@@ -48,28 +49,42 @@ public class AStar {
             finished = true;
             return;
         }
-
-        int costCheapestPath = 0;
-        for(ListElement l : path){
-            costCheapestPath += l.value;
+        int costCurrentPath = 0;
+        ArrayList<ListElement> currentPath = getPath(new ListElement(el.node, el.parentNode, el.value));
+        for (ListElement l : currentPath) {
+            costCurrentPath += l.value;
         }
 
         closedList.push(el);
         List<Edge> edges = map.getConnectionsFrom(el.node);
         for (Edge e : edges) {
+            //ArrayList<ListElement> newPath = getPath(new ListElement(e.end, e.start, e.value));
             if (!containsField(openList, e.end) && !containsField(closedList, e.end)) {
-                openList.add(new ListElement(e.end,el.node,e.value));
-                path.add(new ListElement(e.end, el.node,e.value));
+                openList.add(new ListElement(e.end, el.node, e.value));
+                path.add(new ListElement(e.end,el.node,e.value));
             }
-            if(containsField(openList,e.end) | containsField(closedList,e.end)){ // && (costCheapestPath + e.value < )
-                path.add(new ListElement(e.end, el.node,e.value));
-                if(containsField(closedList,e.end)){
-                    openList.add(new ListElement(e.end,el.node,e.value));
-                    closedList.remove(e.end);
+            int costNewPath = 0;
+            for(ListElement l : path)
+                costNewPath += l.value;
+            if (containsField(openList, e.end) | containsField(closedList, e.end) && (costCurrentPath + e.value < costNewPath)) { // && (costCheapestPath + e.value < )
+                if (containsField(closedList, e.end)) {
+                    openList.add(new ListElement(e.end, el.node, e.value));
+                    closedList.remove(new ListElement(e.end,el.node,e.value)); //?
                 }
             }
         }
 
+    }
+
+
+    public ArrayList<ListElement> getPath(ListElement element) {
+
+        path.add(new ListElement(element.node, element.parentNode, element.value));
+        while (element.parentNode != 0) {
+            //path.add(new ListElement(element.parentNode,));
+            //element = new ListElement(element.parentNode,
+        }
+        return path;
     }
 
     public void draw(PApplet sketch, TileDrawer drawer) {
