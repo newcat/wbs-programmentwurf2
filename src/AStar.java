@@ -50,15 +50,14 @@ public class AStar {
             return;
         }
         int costCurrentPath = 0;
-        ArrayList<ListElement> currentPath = getPath(new ListElement(el.node, el.parentNode, el.value));
-        for (ListElement l : currentPath) {
+        path.add(new ListElement(el.node,el.parentNode,el.value));
+        for (ListElement l : path) {
             costCurrentPath += l.value;
         }
 
         closedList.push(el);
         List<Edge> edges = map.getConnectionsFrom(el.node);
         for (Edge e : edges) {
-            //ArrayList<ListElement> newPath = getPath(new ListElement(e.end, e.start, e.value));
             if (!containsField(openList, e.end) && !containsField(closedList, e.end)) {
                 openList.add(new ListElement(e.end, el.node, e.value));
                 path.add(new ListElement(e.end,el.node,e.value));
@@ -76,16 +75,6 @@ public class AStar {
 
     }
 
-
-    public ArrayList<ListElement> getPath(ListElement element) {
-
-        path.add(new ListElement(element.node, element.parentNode, element.value));
-        while (element.parentNode != 0) {
-            //path.add(new ListElement(element.parentNode,));
-            //element = new ListElement(element.parentNode,
-        }
-        return path;
-    }
 
     public void draw(PApplet sketch, TileDrawer drawer) {
 
