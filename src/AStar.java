@@ -35,44 +35,46 @@ public class AStar {
     }
 
     public void step() {
+while(!finished) {
 
-        if (openList.isEmpty())
-            return;
 
-        // sort the elements ascending by their value
-        openList.sort((el1, el2) -> el2.value - el1.value);
+    if (openList.isEmpty())
+        return;
 
-        // take the element with the lowest value, remove it from the "open" list and put it onto the "closed" list
-        ListElement el = openList.remove(0);
-        if (el.node == end) {
-            // we have found a path to the target node
-            finished = true;
-            return;
+    // sort the elements ascending by their value
+    openList.sort((el1, el2) -> el2.value - el1.value);
+
+    // take the element with the lowest value, remove it from the "open" list and put it onto the "closed" list
+    ListElement el = openList.remove(0);
+    if (el.node == end) {
+        // we have found a path to the target node
+        finished = true;
+        return;
+    }
+    int costCurrentPath = 0;
+    path.add(new ListElement(el.node, el.parentNode, el.value));
+    for (ListElement l : path) {
+        costCurrentPath += l.value;
+    }
+
+    closedList.push(el);
+    List<Edge> edges = map.getConnectionsFrom(el.node);
+    for (Edge e : edges) {
+        if (!containsField(openList, e.end) && !containsField(closedList, e.end)) {
+            openList.add(new ListElement(e.end, el.node, e.value));
+            path.add(new ListElement(e.end, el.node, e.value));
         }
-        int costCurrentPath = 0;
-        path.add(new ListElement(el.node,el.parentNode,el.value));
-        for (ListElement l : path) {
-            costCurrentPath += l.value;
-        }
-
-        closedList.push(el);
-        List<Edge> edges = map.getConnectionsFrom(el.node);
-        for (Edge e : edges) {
-            if (!containsField(openList, e.end) && !containsField(closedList, e.end)) {
+        int costNewPath = 0;
+        for (ListElement l : path)
+            costNewPath += l.value;
+        if (containsField(openList, e.end) | containsField(closedList, e.end) && (costCurrentPath + e.value < costNewPath)) { // && (costCheapestPath + e.value < )
+            if (containsField(closedList, e.end)) {
                 openList.add(new ListElement(e.end, el.node, e.value));
-                path.add(new ListElement(e.end,el.node,e.value));
-            }
-            int costNewPath = 0;
-            for(ListElement l : path)
-                costNewPath += l.value;
-            if (containsField(openList, e.end) | containsField(closedList, e.end) && (costCurrentPath + e.value < costNewPath)) { // && (costCheapestPath + e.value < )
-                if (containsField(closedList, e.end)) {
-                    openList.add(new ListElement(e.end, el.node, e.value));
-                    closedList.remove(new ListElement(e.end,el.node,e.value)); //?
-                }
+                closedList.remove(new ListElement(e.end, el.node, e.value)); //?
             }
         }
-
+    }
+}
     }
 
 

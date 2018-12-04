@@ -3,6 +3,7 @@ import processing.core.PVector;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -70,7 +71,7 @@ class Map {
     }
 
     List<Edge> getConnectionsFrom(int linearCoord) {
-        List<Edge> edges = null;
+        List<Edge> edges = new ArrayList<>();
         edges.add(new Edge(linearCoord,linearCoord+1));
         edges.add(new Edge(linearCoord,linearCoord-1));
         edges.add(new Edge(linearCoord,linearCoord+dimX));
