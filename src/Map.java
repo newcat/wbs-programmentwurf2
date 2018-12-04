@@ -70,8 +70,12 @@ class Map {
     }
 
     List<Edge> getConnectionsFrom(int linearCoord) {
-        // TODO
-        return null;
+        List<Edge> edges = null;
+        edges.add(new Edge(linearCoord,linearCoord+1));
+        edges.add(new Edge(linearCoord,linearCoord-1));
+        edges.add(new Edge(linearCoord,linearCoord+dimX));
+        edges.add(new Edge(linearCoord,linearCoord-dimX));
+        return edges;
     }
 
     int getField(int x, int y) {
