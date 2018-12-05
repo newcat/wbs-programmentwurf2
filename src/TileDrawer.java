@@ -1,5 +1,4 @@
 import processing.core.PApplet;
-import processing.core.PVector;
 
 class TileDrawer {
 
@@ -19,6 +18,15 @@ class TileDrawer {
         sketch.stroke(0, 0, 0, 64);
         sketch.strokeWeight(1f);
         sketch.fill(r, g, b, alpha);
+        sketch.rect(v.x * sizeX, v.y * sizeY, sizeX, sizeY);
+        sketch.popStyle();
+    }
+
+    void outlineTile(Vector v, int r, int g, int b, int alpha) {
+        sketch.pushStyle();
+        sketch.stroke(r, g, b, alpha);
+        sketch.strokeWeight(2f);
+        sketch.noFill();
         sketch.rect(v.x * sizeX, v.y * sizeY, sizeX, sizeY);
         sketch.popStyle();
     }

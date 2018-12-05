@@ -3,6 +3,7 @@ import processing.core.PApplet;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -22,38 +23,53 @@ class Map {
             new Color(60, 60, 60)
     };
 
-    Map(int dimX, int dimY, String filePath) {
-        this.dimX = dimX;
-        this.dimY = dimY;
-        this.fields = new int[dimY][dimX];
+    Map(String filePath) {
+
         BufferedReader stream;
+
         try {
+
             String line;
+            String[] splitLine;
+            ArrayList<int[]> rows = new ArrayList<>();
             stream = new BufferedReader(new FileReader(filePath));
 
-            // input fields
-            for (int y = 0; y < dimY; y++) {
+            do {
+
                 line = stream.readLine();
-                String[] splittedLine = line.split(";");
-                if (splittedLine.length != dimX) {
-                    throw new Exception("Input error: Incorrect X dimensions");
+                splitLine = line.split(";");
+
+                if (rows.isEmpty()) {
+                    // this is the first line so infer x dimensions from the line
+                    this.dimX = splitLine.length;
                 }
-                for (int x = 0; x < dimX; x++) {
-                    fields[y][x] = Integer.parseInt(splittedLine[x]);
+
+                if (splitLine.length == 0) {
+                    break;
+                } else if (splitLine.length != dimX) {
+                    throw new Exception("Input error: Inconsistent X dimensions");
                 }
-            }
+
+                int[] lineValues = Arrays.stream(splitLine).mapToInt(Integer::parseInt).toArray();
+                rows.add(lineValues);
+
+            } while (true);
+
+            this.dimY = rows.size();
+            this.fields = new int[this.dimY][];
+            this.fields = rows.toArray(this.fields);
 
             // ignore headers
-            stream.readLine();
             stream.readLine();
 
             // input field weights
             while ((line = stream.readLine()) != null) {
-                String[] splittedLine = line.split(";");
-                weights.put(Integer.parseInt(splittedLine[0]), Integer.parseInt(splittedLine[2]));
+                splitLine = line.split(";");
+                weights.put(Integer.parseInt(splitLine[0]), Integer.parseInt(splitLine[2]));
             }
 
             stream.close();
+
         } catch (Exception e) {
             System.out.println(e);
         }

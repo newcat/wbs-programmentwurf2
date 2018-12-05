@@ -104,26 +104,25 @@ public class AStar {
 
     public void draw(PApplet sketch, TileDrawer drawer) {
 
-        // TODO
-        // draw elements in open list
-        // openList.forEach((el) -> drawer.drawTile(el.node, 255, 255, 255, 10));
-
         // draw elements in closed list
-        // closedList.forEach((el) -> drawer.drawTile(el.node, 0, 0, 0, 128));
+        closedList.forEach((el) -> drawer.outlineTile(el.node, 255, 255, 0, 255));
+
+        // draw elements in open list
+        openList.forEach((el) -> drawer.outlineTile(el.node, 255, 0, 0, 255));
 
     }
 
-    public Stack<ListElement> getPath() {
-        Stack<ListElement> stack = new Stack<>();
+    public ArrayDeque<ListElement> getPath() {
+        ArrayDeque<ListElement> path = new ArrayDeque<>();
 
         // find the target node
-        stack.push(getField(closedList, end));
+        path.add(getField(closedList, end));
 
-        while (stack.peek().parentNode != null) {
-            stack.push(getField(closedList, stack.peek().parentNode));
+        while (path.getLast().parentNode != null) {
+            path.add(getField(closedList, path.getLast().parentNode));
         }
 
-        return stack;
+        return path;
     }
 
     private boolean containsField(Iterable<ListElement> i, Vector v) {
