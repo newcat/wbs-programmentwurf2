@@ -1,4 +1,5 @@
 import processing.core.PApplet;
+import processing.core.PConstants;
 
 class TileDrawer {
 
@@ -22,12 +23,20 @@ class TileDrawer {
         sketch.popStyle();
     }
 
-    void outlineTile(Vector v, int r, int g, int b, int alpha) {
+    void markTile(Vector v, int r, int g, int b, int alpha) {
         sketch.pushStyle();
-        sketch.stroke(r, g, b, alpha);
-        sketch.strokeWeight(2f);
-        sketch.noFill();
-        sketch.rect(v.x * sizeX, v.y * sizeY, sizeX, sizeY);
+        sketch.noStroke();
+        sketch.fill(r, g, b, alpha);
+        sketch.ellipse(v.x * sizeX + sizeX / 2f, v.y * sizeY + sizeY / 2f, sizeX / 3f, sizeY / 3f);
+        sketch.popStyle();
+    }
+
+    void drawText(Vector v, String text) {
+        sketch.pushStyle();
+        sketch.stroke(0);
+        sketch.textAlign(PConstants.CENTER, PConstants.CENTER);
+        sketch.fill(0);
+        sketch.text(text, v.x * sizeX + sizeX / 2f, v.y * sizeY + sizeY / 2f - 1);
         sketch.popStyle();
     }
 

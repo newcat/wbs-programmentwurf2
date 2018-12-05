@@ -1,5 +1,3 @@
-import processing.core.PApplet;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
@@ -71,12 +69,12 @@ class Map {
             stream.close();
 
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
 
     }
 
-    void draw(PApplet sketch, TileDrawer drawer) {
+    void draw(TileDrawer drawer) {
         for (int y = 0; y < dimY; y++) {
             for (int x = 0; x < dimX; x++) {
                 Color c = colors[fields[y][x]];
@@ -87,26 +85,36 @@ class Map {
 
     List<Edge> getConnectionsFrom(Vector v) {
         List<Edge> edges = new ArrayList<>();
-        int value = weights.get(getField(v));
 
         if (v.y > 0) {
-            edges.add(new Edge(new Vector(v.x, v.y - 1), value));
+            edges.add(getEdge(v.x, v.y - 1));
         }
         if (v.y < dimY - 1) {
-            edges.add(new Edge(new Vector(v.x, v.y + 1), value));
+            edges.add(getEdge(v.x, v.y + 1));
         }
         if (v.x > 0) {
-            edges.add(new Edge(new Vector(v.x - 1, v.y), value));
+            edges.add(getEdge(v.x - 1, v.y));
         }
         if (v.x < dimX - 1) {
-            edges.add(new Edge(new Vector(v.x + 1, v.y), value));
+            edges.add(getEdge(v.x + 1, v.y));
         }
 
         return edges;
     }
 
+    private Edge getEdge(int x, int y) {
+        Vector u = new Vector(x, y);
+        int value = weights.get(getField(u));
+        return new Edge(u, value);
+    }
+
     int getField(Vector v) {
         return fields[v.y][v.x];
+    }
+
+    int getMinimumWeight() {
+        return weights.values().stream().min(Integer::compareTo)
+                .orElse(1);
     }
 
     int getDimX() {

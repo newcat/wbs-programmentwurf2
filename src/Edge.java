@@ -1,9 +1,9 @@
 public class Edge {
 
-    public Vector end;
-    public int value;
+    Vector end;
+    int value;
 
-    public Edge(Vector end, int value) {
+    Edge(Vector end, int value) {
         this.end = end;
         this.value = value;
     }

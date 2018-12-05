@@ -14,14 +14,17 @@ public class AStar {
     private Vector end;
     private Map map;
 
-    public AStar(Map map, Vector start, Vector end) {
+    private int minimumWeight;
+
+    AStar(Map map, Vector start, Vector end) {
         this.map = map;
         this.start = start;
         this.end = end;
         openList.add(new ListElement(start, null, 0, g(start), 0));
+        this.minimumWeight = map.getMinimumWeight();
     }
 
-    public int step() {
+    int step() {
 
         if (openList.isEmpty())
             return -1;
@@ -49,16 +52,18 @@ public class AStar {
         List<Edge> successors = map.getConnectionsFrom(el.node);
 
         for (Edge successor : successors) {
+            Vector newNode = successor.end;
+            int costToNewNode = successor.value;
 
             // if the successor is already on the closed list, skip this successor
-            if (containsField(closedList, successor.end)) {
+            if (containsField(closedList, newNode)) {
                 continue;
             }
 
             // check if this node would increase the amount of water crossing
             // over the maximum amount
             final int newWaterCrossings;
-            if (isWater(successor.end)) {
+            if (isWater(newNode)) {
                 if (el.waterCrossings + 1 > MAX_WATER_CROSSINGS) {
                     continue;
                 } else {
@@ -68,7 +73,7 @@ public class AStar {
                 newWaterCrossings = el.waterCrossings;
             }
 
-            double expectedValue = g(successor.end) + el.value + successor.value;
+            double expectedValue = g(newNode) + el.value + successor.value;
 
             // check if the node is already on the open list (check for water crossings as well)
             Optional<ListElement> altEl = openList.stream()
@@ -99,20 +104,27 @@ public class AStar {
     }
 
     private double g(Vector node) {
-        return Math.sqrt(Math.pow(Math.abs(start.x - node.x), 2) + Math.pow(Math.abs(start.y - node.y), 2));
+        // multiply with minimumWeight, as this is the minimal cost possible
+        return Math.sqrt((end.x - node.x) * (end.x - node.x) + (end.y - node.y) * (end.y - node.y)) * minimumWeight;
     }
 
-    public void draw(PApplet sketch, TileDrawer drawer) {
+    void draw(PApplet sketch, TileDrawer drawer) {
 
         // draw elements in closed list
-        closedList.forEach((el) -> drawer.outlineTile(el.node, 255, 255, 0, 255));
+        closedList.forEach((el) -> {
+            drawer.markTile(el.node, 255, 255, 0, 255);
+            drawer.drawText(el.node, Integer.toString(el.waterCrossings));
+        });
 
         // draw elements in open list
-        openList.forEach((el) -> drawer.outlineTile(el.node, 255, 0, 0, 255));
+        openList.forEach((el) -> {
+            drawer.markTile(el.node, 255, 0, 0, 255);
+            drawer.drawText(el.node, Integer.toString(el.waterCrossings));
+        });
 
     }
 
-    public ArrayDeque<ListElement> getPath() {
+    ArrayDeque<ListElement> getPath() {
         ArrayDeque<ListElement> path = new ArrayDeque<>();
 
         // find the target node

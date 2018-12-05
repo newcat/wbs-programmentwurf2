@@ -3,7 +3,7 @@ class Vector {
     int x;
     int y;
 
-    public Vector(int x, int y) {
+    Vector(int x, int y) {
         this.x = x;
         this.y = y;
     }
@@ -16,5 +16,10 @@ class Vector {
             Vector other = (Vector)obj;
             return this.x == other.x && this.y == other.y;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "(" + x + "|" + y + ")";
     }
 }
