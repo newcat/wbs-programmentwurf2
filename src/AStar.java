@@ -1,106 +1,145 @@
 import processing.core.PApplet;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class AStar {
 
     private final int MAX_WATER_CROSSINGS = 2;
-
-    private class ListElement {
-        int node;
-        int parentNode;
-        int value;
-        int waterCrossings;
-        ListElement(int node, int parentNode, int value, int waterCrossings) {
-            this.node = node;
-            this.parentNode = parentNode;
-            this.value = value;
-            this.waterCrossings = waterCrossings;
-        }
-    }
+    private final int WATER_FIELD_TYPE = 1;
 
     private ArrayDeque<ListElement> closedList = new ArrayDeque<>();
     private ArrayList<ListElement> openList = new ArrayList<>();
-    private ArrayList<ListElement> path = new ArrayList<>();
-    private boolean finished = false;
 
-    private int start;
-    private int end;
+    private Vector start;
+    private Vector end;
     private Map map;
 
-    public AStar(Map map, int start, int end) {
+    public AStar(Map map, Vector start, Vector end) {
         this.map = map;
         this.start = start;
         this.end = end;
-        openList.add(new ListElement(start, -1, 0, 0));
+        openList.add(new ListElement(start, null, 0, g(start), 0));
     }
 
-    public void step() {
-while(!finished) {
+    public int step() {
 
+        if (openList.isEmpty())
+            return -1;
 
-    if (openList.isEmpty())
-        return;
+        // sort the elements ascending by their value
+        openList.sort((el1, el2) -> Double.compare(el1.expectedValue, el2.expectedValue));
 
-    // sort the elements ascending by their value
-    openList.sort((el1, el2) -> el2.value - el1.value);
+        // take the element with the lowest value, remove it from the "open" list and put it onto the "closed" list
+        ListElement el = openList.remove(0);
+        closedList.add(el);
 
-    // take the element with the lowest value, remove it from the "open" list and put it onto the "closed" list
-    ListElement el = openList.remove(0);
-    if (el.node == end) {
-        // we have found a path to the target node
-        finished = true;
-        return;
-    }
-    int costCurrentPath = 0;
-    path.add(new ListElement(el.node, el.parentNode, el.value));
-    for (ListElement l : path) {
-        costCurrentPath += l.value;
-    }
-
-    closedList.push(el);
-    List<Edge> edges = map.getConnectionsFrom(el.node);
-    for (Edge e : edges) {
-        if (!containsField(openList, e.end) && !containsField(closedList, e.end)) {
-            openList.add(new ListElement(e.end, el.node, e.value));
-            path.add(new ListElement(e.end, el.node, e.value));
+        if (el.node.equals(end)) {
+            // we have found a path to the target node
+            return 1;
         }
-        int costNewPath = 0;
-        for (ListElement l : path)
-            costNewPath += l.value;
-        if (containsField(openList, e.end) | containsField(closedList, e.end) && (costCurrentPath + e.value < costNewPath)) { // && (costCheapestPath + e.value < )
-            if (containsField(closedList, e.end)) {
-                openList.add(new ListElement(e.end, el.node, e.value));
-                closedList.remove(new ListElement(e.end, el.node, e.value)); //?
+
+        expandNode(el);
+        return 0;
+
+    }
+
+    private void expandNode(ListElement el) {
+
+        // get all fields connected to current node
+        List<Edge> successors = map.getConnectionsFrom(el.node);
+
+        for (Edge successor : successors) {
+
+            // if the successor is already on the closed list, skip this successor
+            if (containsField(closedList, successor.end)) {
+                continue;
             }
+
+            // check if this node would increase the amount of water crossing
+            // over the maximum amount
+            final int newWaterCrossings;
+            if (isWater(successor.end)) {
+                if (el.waterCrossings + 1 > MAX_WATER_CROSSINGS) {
+                    continue;
+                } else {
+                    newWaterCrossings = el.waterCrossings + 1;
+                }
+            } else {
+                newWaterCrossings = el.waterCrossings;
+            }
+
+            double expectedValue = g(successor.end) + el.value + successor.value;
+
+            // check if the node is already on the open list (check for water crossings as well)
+            Optional<ListElement> altEl = openList.stream()
+                    .filter((x) -> x.node.equals(successor.end) && x.waterCrossings == newWaterCrossings)
+                    .findFirst();
+
+            if (!altEl.isPresent() || (altEl.get().value + g(altEl.get().node)) > expectedValue) {
+
+                // we have found a new or better alternative -> put into open list
+
+                // if exists, remove old item first
+                altEl.ifPresent(listElement -> openList.remove(listElement));
+
+                ListElement newEl = new ListElement(
+                        successor.end, el.node, el.value + successor.value,
+                        expectedValue, newWaterCrossings);
+                openList.add(newEl);
+
+            }
+
+
         }
-    }
-}
+
     }
 
+    private boolean isWater(Vector node) {
+        return map.getField(node) == WATER_FIELD_TYPE;
+    }
+
+    private double g(Vector node) {
+        return Math.sqrt(Math.pow(Math.abs(start.x - node.x), 2) + Math.pow(Math.abs(start.y - node.y), 2));
+    }
 
     public void draw(PApplet sketch, TileDrawer drawer) {
 
+        // TODO
         // draw elements in open list
-        openList.forEach((el) -> drawer.drawTile(el.node, 255, 255, 255, 10));
+        // openList.forEach((el) -> drawer.drawTile(el.node, 255, 255, 255, 10));
 
         // draw elements in closed list
-        closedList.forEach((el) -> drawer.drawTile(el.node, 0, 0, 0, 128));
+        // closedList.forEach((el) -> drawer.drawTile(el.node, 0, 0, 0, 128));
 
     }
 
-    public boolean getFinished() {
-        return finished;
+    public Stack<ListElement> getPath() {
+        Stack<ListElement> stack = new Stack<>();
+
+        // find the target node
+        stack.push(getField(closedList, end));
+
+        while (stack.peek().parentNode != null) {
+            stack.push(getField(closedList, stack.peek().parentNode));
+        }
+
+        return stack;
     }
 
-    private boolean containsField(Iterable<ListElement> i, int x) {
+    private boolean containsField(Iterable<ListElement> i, Vector v) {
         for (ListElement e : i) {
-            if (e.node == x)
+            if (e.node.equals(v))
                 return true;
         }
         return false;
+    }
+
+    private ListElement getField(Iterable<ListElement> i, Vector v) {
+        for (ListElement e : i) {
+            if (e.node.equals(v))
+                return e;
+        }
+        return null;
     }
 
 }

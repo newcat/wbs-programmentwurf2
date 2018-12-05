@@ -1,5 +1,4 @@
 import processing.core.PApplet;
-import processing.core.PVector;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -11,7 +10,7 @@ class Map {
 
     private int dimX;
     private int dimY;
-    private int[] fields;
+    private int[][] fields;
     private HashMap<Integer, Integer> weights = new HashMap<>();
 
     private Color[] colors = new Color[]{
@@ -26,7 +25,7 @@ class Map {
     Map(int dimX, int dimY, String filePath) {
         this.dimX = dimX;
         this.dimY = dimY;
-        this.fields = new int[dimX * dimY];
+        this.fields = new int[dimY][dimX];
         BufferedReader stream;
         try {
             String line;
@@ -40,7 +39,7 @@ class Map {
                     throw new Exception("Input error: Incorrect X dimensions");
                 }
                 for (int x = 0; x < dimX; x++) {
-                    fields[coordinatesToLinear(x, y)] = Integer.parseInt(splittedLine[x]);
+                    fields[y][x] = Integer.parseInt(splittedLine[x]);
                 }
             }
 
@@ -64,27 +63,34 @@ class Map {
     void draw(PApplet sketch, TileDrawer drawer) {
         for (int y = 0; y < dimY; y++) {
             for (int x = 0; x < dimX; x++) {
-                Color c = colors[fields[coordinatesToLinear(x, y)]];
-                drawer.drawTile(x, y, c.r, c.g, c.b, 255);
+                Color c = colors[fields[y][x]];
+                drawer.drawTile(new Vector(x, y), c.r, c.g, c.b, 255);
             }
         }
     }
 
-    List<Edge> getConnectionsFrom(int linearCoord) {
+    List<Edge> getConnectionsFrom(Vector v) {
         List<Edge> edges = new ArrayList<>();
-        edges.add(new Edge(linearCoord,linearCoord+1));
-        edges.add(new Edge(linearCoord,linearCoord-1));
-        edges.add(new Edge(linearCoord,linearCoord+dimX));
-        edges.add(new Edge(linearCoord,linearCoord-dimX));
+        int value = weights.get(getField(v));
+
+        if (v.y > 0) {
+            edges.add(new Edge(new Vector(v.x, v.y - 1), value));
+        }
+        if (v.y < dimY - 1) {
+            edges.add(new Edge(new Vector(v.x, v.y + 1), value));
+        }
+        if (v.x > 0) {
+            edges.add(new Edge(new Vector(v.x - 1, v.y), value));
+        }
+        if (v.x < dimX - 1) {
+            edges.add(new Edge(new Vector(v.x + 1, v.y), value));
+        }
+
         return edges;
     }
 
-    int getField(int x, int y) {
-        return getField(coordinatesToLinear(x, y));
-    }
-
-    int getField(int c) {
-        return fields[c];
+    int getField(Vector v) {
+        return fields[v.y][v.x];
     }
 
     int getDimX() {
@@ -93,14 +99,6 @@ class Map {
 
     int getDimY() {
         return dimY;
-    }
-
-    int coordinatesToLinear(int x, int y) {
-        return y * dimX + x;
-    }
-
-    PVector linearToCoordinates(int v) {
-        return new PVector(v / dimX, v % dimX);
     }
 
 }
