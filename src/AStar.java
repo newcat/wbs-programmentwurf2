@@ -6,14 +6,18 @@ import java.util.List;
 
 public class AStar {
 
+    private final int MAX_WATER_CROSSINGS = 2;
+
     private class ListElement {
         int node;
         int parentNode;
         int value;
-        ListElement(int node, int parentNode, int value) {
+        int waterCrossings;
+        ListElement(int node, int parentNode, int value, int waterCrossings) {
             this.node = node;
             this.parentNode = parentNode;
             this.value = value;
+            this.waterCrossings = waterCrossings;
         }
     }
 
@@ -29,7 +33,7 @@ public class AStar {
         this.map = map;
         this.start = start;
         this.end = end;
-        openList.add(new ListElement(start, -1, 0));
+        openList.add(new ListElement(start, -1, 0, 0));
     }
 
     public void step() {
