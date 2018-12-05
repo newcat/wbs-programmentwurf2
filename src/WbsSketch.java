@@ -19,7 +19,7 @@ public class WbsSketch extends PApplet {
     public void setup() {
 
         //load map file
-        map = new Map(DIM_X, DIM_Y, ".\\fields.csv");
+        map = new Map(DIM_X, DIM_Y, ".\\S_004_Daten.csv");
         tileDrawer = new TileDrawer(this, map);
 
     }
