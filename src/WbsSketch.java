@@ -36,6 +36,8 @@ public class WbsSketch extends PApplet {
         astar = new AStar(map, start, end);
 
         frameRate(30f);
+        surface.setTitle("A* Algorithm");
+        surface.setAlwaysOnTop(true);
 
     }
 
