@@ -1,16 +1,13 @@
-import processing.core.PApplet;
-
 import java.util.*;
 
-public class AStar {
+class AStar {
 
     private final int MAX_WATER_CROSSINGS = 2;
     private final int WATER_FIELD_TYPE = 1;
 
-    private ArrayDeque<ListElement> closedList = new ArrayDeque<>();
+    private ArrayList<ListElement> closedList = new ArrayList<>();
     private ArrayList<ListElement> openList = new ArrayList<>();
 
-    private Vector start;
     private Vector end;
     private Map map;
 
@@ -18,7 +15,6 @@ public class AStar {
 
     AStar(Map map, Vector start, Vector end) {
         this.map = map;
-        this.start = start;
         this.end = end;
         openList.add(new ListElement(start, null, 0, g(start), 0));
         this.minimumWeight = map.getMinimumWeight();
@@ -30,7 +26,7 @@ public class AStar {
             return -1;
 
         // sort the elements ascending by their value
-        openList.sort((el1, el2) -> Double.compare(el1.expectedValue, el2.expectedValue));
+        openList.sort(Comparator.comparingDouble(el -> el.expectedValue));
 
         // take the element with the lowest value, remove it from the "open" list and put it onto the "closed" list
         ListElement el = openList.remove(0);
@@ -73,7 +69,7 @@ public class AStar {
                 newWaterCrossings = el.waterCrossings;
             }
 
-            double expectedValue = g(newNode) + el.value + successor.value;
+            double expectedValue = g(newNode) + el.value + costToNewNode;
 
             // check if the node is already on the open list (check for water crossings as well)
             Optional<ListElement> altEl = openList.stream()
@@ -88,7 +84,7 @@ public class AStar {
                 altEl.ifPresent(listElement -> openList.remove(listElement));
 
                 ListElement newEl = new ListElement(
-                        successor.end, el.node, el.value + successor.value,
+                        successor.end, el.node, el.value + costToNewNode,
                         expectedValue, newWaterCrossings);
                 openList.add(newEl);
 
@@ -103,27 +99,44 @@ public class AStar {
         return map.getField(node) == WATER_FIELD_TYPE;
     }
 
+    // heuristics function
     private double g(Vector node) {
         // multiply with minimumWeight, as this is the minimal cost possible
         return Math.sqrt((end.x - node.x) * (end.x - node.x) + (end.y - node.y) * (end.y - node.y)) * minimumWeight;
     }
 
-    void draw(PApplet sketch, TileDrawer drawer) {
+    void draw(TileDrawer drawer) {
 
-        // draw elements in closed list
-        closedList.forEach((el) -> {
-            drawer.markTile(el.node, 255, 255, 0, 255);
-            drawer.drawText(el.node, Integer.toString(el.waterCrossings));
-        });
+        for (int y = 0; y < map.getDimY(); y++) {
+            for (int x = 0; x < map.getDimX(); x++) {
 
-        // draw elements in open list
-        openList.forEach((el) -> {
-            drawer.markTile(el.node, 255, 0, 0, 255);
-            drawer.drawText(el.node, Integer.toString(el.waterCrossings));
-        });
+                Vector v = new Vector(x, y);
+                int closedListCount = countField(closedList, v);
+                int openListCount = countField(openList, v);
+
+                if (closedListCount > 0 && openListCount > 0) {
+                    drawer.markTile(v, 255, 128, 0, 255);
+                    drawer.drawText(v, "" + closedListCount + "|" + openListCount);
+                } else if (closedListCount > 0) {
+                    drawer.markTile(v, 255, 255, 0, 255);
+                    drawer.drawText(v, "" + closedListCount);
+                } else if (openListCount > 0) {
+                    drawer.markTile(v, 255, 0, 0, 255);
+                    drawer.drawText(v, "" + openListCount);
+                }
+
+            }
+        }
 
     }
 
+    /**
+     * This method will recreate the found path from the closed list
+     * by starting at the end and working backwards to the start
+     * The start is the element, which has no parent node
+     *
+     * @return the list elements representing the path from end to start
+     */
     ArrayDeque<ListElement> getPath() {
         ArrayDeque<ListElement> path = new ArrayDeque<>();
 
@@ -143,6 +156,15 @@ public class AStar {
                 return true;
         }
         return false;
+    }
+
+    private int countField(Iterable<ListElement> i, Vector v) {
+        int count = 0;
+        for (ListElement e : i) {
+            if (e.node.equals(v))
+                count++;
+        }
+        return count;
     }
 
     private ListElement getField(Iterable<ListElement> i, Vector v) {

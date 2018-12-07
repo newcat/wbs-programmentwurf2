@@ -4,12 +4,10 @@ import processing.core.PConstants;
 class TileDrawer {
 
     private PApplet sketch;
-    private Map map;
     private float sizeX, sizeY;
 
     TileDrawer(PApplet sketch, Map map) {
         this.sketch = sketch;
-        this.map = map;
         sizeX = 1f * sketch.width / map.getDimX();
         sizeY = 1f * sketch.height / map.getDimY();
     }
